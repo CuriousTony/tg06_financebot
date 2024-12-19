@@ -3,13 +3,10 @@ import dotenv
 from os import getenv
 from aiogram import Router, F
 from aiogram.filters import CommandStart, Command
-from aiogram.types import Message, FSInputFile
-from aiogram.fsm.context import FSMContext
-from aiogram.fsm.storage.memory import MemoryStorage
+from aiogram.types import Message
 from keyboards.reply import on_start_keyboard
-from db_config import conn, cursor
-from state_machine import FinanceForm
 import requests
+import random
 
 router = Router()
 
@@ -65,8 +62,20 @@ async def exchange_rates(message: Message):
             usd_to_rub = data['conversion_rates']['RUB']
             eur_to_usd = data['conversion_rates']['EUR']
             eur_to_rub = eur_to_usd * usd_to_rub
-            await message.answer(f'1 USD - {usd_to_rub:.2f} rub\n'
-                                 f'1 EUR - {eur_to_rub:.2f} rub')
+            await message.answer(f'1 USD - {usd_to_rub:.1f} руб\n'
+                                 f'1 EUR - {eur_to_rub:.1f} руб')
     except Exception as e:
         await message.answer('Произошла ошибка. Попробуйте позже.')
         print(e)
+
+
+@router.message(F.text == 'Советы по экономии')
+async def handle_advice(message: Message):
+    advices = [
+        'Метод 50/30/20: Разделите доход на три категории: 50% на необходимые расходы, 30% на желания и 20% на сбережения и долги.',
+        'Самообслуживание: Откажитесь от услуг прачечной, готовьте еду дома и чините вещи самостоятельно, чтобы сэкономить.',
+        'Правило двух дней: Отложите покупку на два дня, чтобы избежать импульсивных трат и убедиться, что она действительно необходима.',
+        'Оптимизация коммунальных платежей: Используйте энергосберегающие лампочки, утепляйте дом и сравнивайте тарифы на услуги.',
+        'Подушка безопасности: Накопите резервный фонд, равный 3-6 месячным расходам, чтобы быть готовым к непредвиденным ситуациям.'
+    ]
+    await message.answer(random.choice(advices))
